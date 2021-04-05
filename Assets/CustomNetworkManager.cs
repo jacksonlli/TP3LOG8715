@@ -85,6 +85,52 @@ public class CustomNetworkManager : NetworkingManager
         }
     }
 
+    public void SendUserInputMessage(ReplicationMessage msg)//todo
+    {
+        using (PooledBitStream stream = PooledBitStream.Get())
+        {
+            using (PooledBitWriter writer = PooledBitWriter.Get(stream))
+            {
+                writer.WriteInt32(msg.messageID);
+                writer.WriteInt32(msg.timeCreated);
+                writer.WriteUInt32(msg.entityId);
+                writer.WriteInt16((byte)msg.shape);
+                writer.WriteVector2(msg.pos);
+                writer.WriteVector2(msg.speed);
+                writer.WriteDouble(msg.size);
+                CustomMessagingManager.SendNamedMessage("Replication", null, stream, "customChannel");
+            }
+        }
+    }
+
+
+    private void HandleUserInputMessage(ulong clientId, Stream stream)//todo
+    {
+        ReplicationMessage replicationMessage = new ReplicationMessage();
+        using (PooledBitReader reader = PooledBitReader.Get(stream))
+        {
+            replicationMessage.messageID = reader.ReadInt32();
+            replicationMessage.timeCreated = reader.ReadInt32();
+            replicationMessage.entityId = reader.ReadUInt32();
+            replicationMessage.shape = (Config.Shape)reader.ReadInt16();
+            replicationMessage.pos = reader.ReadVector2();
+            replicationMessage.speed = reader.ReadVector2();
+            replicationMessage.size = (float)reader.ReadDouble();
+            ComponentsManager.Instance.SetComponent<ReplicationMessage>(replicationMessage.entityId, replicationMessage);
+            if (!ComponentsManager.Instance.EntityContains<EntityComponent>(replicationMessage.entityId))
+            {
+                bool spawnFound = ComponentsManager.Instance.TryGetComponent(new EntityComponent(0), out SpawnInfo spawnInfo);
+
+                if (!spawnFound)
+                {
+                    spawnInfo = new SpawnInfo(false);
+                }
+                spawnInfo.replicatedEntitiesToSpawn.Add(replicationMessage);
+                ComponentsManager.Instance.SetComponent<SpawnInfo>(new EntityComponent(0), spawnInfo);
+            }
+        }
+    }
+
     public void RegisterClientNetworkHandlers()
     {
         CustomMessagingManager.RegisterNamedMessageHandler("Replication", HandleReplicationMessage);
@@ -92,7 +138,7 @@ public class CustomNetworkManager : NetworkingManager
 
     public void RegisterServerNetworkHandlers()
     {
-        // TODO
+        CustomMessagingManager.RegisterNamedMessageHandler("UserInput", HandleReplicationMessage);
     }
 
 
