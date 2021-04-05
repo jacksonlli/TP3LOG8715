@@ -85,7 +85,7 @@ public class CustomNetworkManager : NetworkingManager
         }
     }
 
-    public void SendUserInputMessage(ReplicationMessage msg)//todo
+    public void SendUserInputMessage(UserInputMessage msg)
     {
         using (PooledBitStream stream = PooledBitStream.Get())
         {
@@ -94,40 +94,30 @@ public class CustomNetworkManager : NetworkingManager
                 writer.WriteInt32(msg.messageID);
                 writer.WriteInt32(msg.timeCreated);
                 writer.WriteUInt32(msg.entityId);
-                writer.WriteInt16((byte)msg.shape);
-                writer.WriteVector2(msg.pos);
                 writer.WriteVector2(msg.speed);
-                writer.WriteDouble(msg.size);
-                CustomMessagingManager.SendNamedMessage("Replication", null, stream, "customChannel");
+                CustomMessagingManager.SendNamedMessage("UserInput", this.ServerClientId, stream, "customChannel");//inspiré par le message de Jacob Dorais et Louis-Philippe dans Discord
             }
         }
     }
 
-
-    private void HandleUserInputMessage(ulong clientId, Stream stream)//todo
+    private void HandleUserInputMessage(ulong serverClientId, Stream stream)
     {
-        ReplicationMessage replicationMessage = new ReplicationMessage();
+        UserInputMessage userInputMessage = new UserInputMessage();
         using (PooledBitReader reader = PooledBitReader.Get(stream))
         {
-            replicationMessage.messageID = reader.ReadInt32();
-            replicationMessage.timeCreated = reader.ReadInt32();
-            replicationMessage.entityId = reader.ReadUInt32();
-            replicationMessage.shape = (Config.Shape)reader.ReadInt16();
-            replicationMessage.pos = reader.ReadVector2();
-            replicationMessage.speed = reader.ReadVector2();
-            replicationMessage.size = (float)reader.ReadDouble();
-            ComponentsManager.Instance.SetComponent<ReplicationMessage>(replicationMessage.entityId, replicationMessage);
-            if (!ComponentsManager.Instance.EntityContains<EntityComponent>(replicationMessage.entityId))
-            {
-                bool spawnFound = ComponentsManager.Instance.TryGetComponent(new EntityComponent(0), out SpawnInfo spawnInfo);
+            userInputMessage.messageID = reader.ReadInt32();
+            userInputMessage.timeCreated = reader.ReadInt32();
+            userInputMessage.entityId = reader.ReadUInt32();
+            userInputMessage.speed = reader.ReadVector2();
 
-                if (!spawnFound)
-                {
-                    spawnInfo = new SpawnInfo(false);
-                }
-                spawnInfo.replicatedEntitiesToSpawn.Add(replicationMessage);
-                ComponentsManager.Instance.SetComponent<SpawnInfo>(new EntityComponent(0), spawnInfo);
-            }
+            ShapeComponent oldShape = ComponentsManager.Instance.GetComponent<ShapeComponent>(userInputMessage.entityId);
+            ShapeComponent newShape = new ShapeComponent();
+            newShape.pos = oldShape.pos;
+            newShape.size = oldShape.size;
+            newShape.speed = userInputMessage.speed;
+            newShape.shape = oldShape.shape;
+
+            ComponentsManager.Instance.SetComponent<ShapeComponent>(userInputMessage.entityId, newShape);
         }
     }
 
@@ -138,7 +128,7 @@ public class CustomNetworkManager : NetworkingManager
 
     public void RegisterServerNetworkHandlers()
     {
-        CustomMessagingManager.RegisterNamedMessageHandler("UserInput", HandleReplicationMessage);
+        CustomMessagingManager.RegisterNamedMessageHandler("UserInput", HandleUserInputMessage);
     }
 
 
