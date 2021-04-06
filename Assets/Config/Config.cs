@@ -27,6 +27,6 @@ public class Config : ScriptableObject {
     public bool enableInputPrediction;
 
     [SerializeField]
-    public bool enablDeadReckoning;
+    public bool enableDeadReckoning;
 
 }
