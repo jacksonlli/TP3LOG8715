@@ -6,7 +6,7 @@ public class ReplicationSystem : ISystem
 {
     public string Name
     {
-        get 
+        get
        {
             return GetType().Name;
         }

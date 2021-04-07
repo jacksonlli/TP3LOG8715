@@ -11,6 +11,8 @@ public class UserInputSystem : ISystem
             return GetType().Name;
         }
     }
+
+    // private Config config;
     public void UpdateSystem()
     {
         if (ECSManager.Instance.NetworkManager.isClient)
@@ -38,6 +40,17 @@ public class UserInputSystem : ISystem
             float speedMagnitude = 10;
             Vector2 speed = new Vector2(xSpeed*speedMagnitude, ySpeed*speedMagnitude);
             CreateUserInputMessage(speed);
+
+            if (ECSManager.Instance.Config.enableInputPrediction)
+            {
+              uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;
+              Debug.Log(clientId);
+              ShapeComponent playerComponent = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientId);
+              playerComponent.speed = speed;
+              ComponentsManager.Instance.SetComponent<ShapeComponent>(clientId, playerComponent);
+
+            }
+
         }
     }
 
@@ -55,4 +68,3 @@ public class UserInputSystem : ISystem
         ComponentsManager.Instance.SetComponent<UserInputMessage>(clientId, msg);
     }
 }
-

@@ -1,8 +1,8 @@
 ﻿public class DisplayShapePositionSystem : ISystem
 {
-    public string Name 
+    public string Name
     {
-        get 
+        get
         {
             return GetType().Name;
         }

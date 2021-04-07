@@ -14,7 +14,7 @@ public class CustomNetworkManager : NetworkingManager
         OnClientConnectedCallback += OnClientConnected;
         OnServerStarted += OnStartServer;
     }
-    
+
     public void OnClientConnected(ulong clientId)
     {
         if (isServer)
