@@ -117,6 +117,13 @@ public class CustomNetworkManager : NetworkingManager
             newShape.speed = userInputMessage.speed;
             newShape.shape = oldShape.shape;
 
+            if (ECSManager.Instance.Config.enableInputPrediction)
+            {
+              ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(userInputMessage.timeCreated, userInputMessage.entityId);
+              ClientTimeCreateComponent.timedClientComponent[timeCreateComponent] = newShape;
+              // ComponentsManager.Instance.SetComponent<ClientTimeCreateComponent>(userInputMessage.entityId, timeCreateComponent);
+            }
+
             ComponentsManager.Instance.SetComponent<ShapeComponent>(userInputMessage.entityId, newShape);
         }
     }

@@ -37,6 +37,11 @@ public class ReplicationSystem : ISystem
                 pos = shapeComponent.pos,
                 speed = shapeComponent.speed,
                 size = shapeComponent.size
+
+                if (ECSManager.Instance.Config.enableInputPrediction)
+                {
+                  // clientTimeCreated = ComponentsManager.Instance.GetComponent<ClientTimeCreateComponent>(entityId).clientTimeCreated;
+                }
             };
             ComponentsManager.Instance.SetComponent<ReplicationMessage>(entityID, msg);
         });
