@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class UserInputSystem : ISystem
 {
+    public compteur = 0;
     public string Name
     {
         get
@@ -17,6 +18,9 @@ public class UserInputSystem : ISystem
     {
         if (ECSManager.Instance.NetworkManager.isClient)
         {
+
+            compteur++;
+
             float xSpeed = 0;
             float ySpeed = 0;
 
@@ -61,7 +65,7 @@ public class UserInputSystem : ISystem
         UserInputMessage msg = new UserInputMessage()
         {
             messageID = 0,
-            timeCreated = Utils.SystemTime,
+            timeCreated = compteur,
             entityId = clientId,
             speed = speed
         };

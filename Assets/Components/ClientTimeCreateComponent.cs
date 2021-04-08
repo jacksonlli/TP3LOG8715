@@ -4,6 +4,14 @@ using UnityEngine;
 
 public struct ClientTimeCreateComponent : IComponent
 {
+    // public static Dictionary<int, uint> timeId; //clé : temps
+
+    public static Dictionary<uint, int> idTime; //clé : Id
+
+
+
+
+
     public idTimeStruct clientIdTimeCreated;
     public static Dictionary<idTimeStruct, IComponent> timedClientComponent;
 

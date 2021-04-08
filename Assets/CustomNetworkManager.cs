@@ -121,6 +121,7 @@ public class CustomNetworkManager : NetworkingManager
             {
               ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(userInputMessage.timeCreated, userInputMessage.entityId);
               ClientTimeCreateComponent.timedClientComponent[timeCreateComponent] = newShape;
+              ClientTimeCreateComponent.idTime[userInputMessage.entityId] = userInputMessage.timeCreated;
               // ComponentsManager.Instance.SetComponent<ClientTimeCreateComponent>(userInputMessage.entityId, timeCreateComponent);
             }
 

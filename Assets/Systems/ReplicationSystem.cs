@@ -40,6 +40,9 @@ public class ReplicationSystem : ISystem
 
                 if (ECSManager.Instance.Config.enableInputPrediction)
                 {
+                  int clientTime = idTime[entityId];
+                  idTimestruct clientIdTimeCreated = idTimeStruct(clientTime, entityId);
+                  
                   // clientTimeCreated = ComponentsManager.Instance.GetComponent<ClientTimeCreateComponent>(entityId).clientTimeCreated;
                 }
             };
