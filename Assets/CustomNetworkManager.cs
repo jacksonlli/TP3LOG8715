@@ -119,9 +119,9 @@ public class CustomNetworkManager : NetworkingManager
 
             if (ECSManager.Instance.Config.enableInputPrediction)
             {
-              ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(userInputMessage.timeCreated, userInputMessage.entityId);
-              ClientTimeCreateComponent.timedClientComponent[timeCreateComponent] = newShape;
-              ClientTimeCreateComponent.idTime[userInputMessage.entityId] = userInputMessage.timeCreated;
+              // ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(userInputMessage.timeCreated, userInputMessage.entityId);
+              // ClientTimeCreateComponent.timedClientComponent[timeCreateComponent.clientIdTimeCreated] = newShape;
+              // ClientTimeCreateComponent.idTime[userInputMessage.entityId] = userInputMessage.timeCreated;
               // ComponentsManager.Instance.SetComponent<ClientTimeCreateComponent>(userInputMessage.entityId, timeCreateComponent);
             }
 

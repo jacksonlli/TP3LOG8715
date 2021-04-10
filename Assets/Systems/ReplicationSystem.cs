@@ -27,7 +27,6 @@ public class ReplicationSystem : ISystem
     public static void UpdateSystemServer()
     {
         // creates messages from current state
-
         ComponentsManager.Instance.ForEach<ShapeComponent>((entityID, shapeComponent) => {
             ReplicationMessage msg = new ReplicationMessage() {
                 messageID = 0,
@@ -38,14 +37,35 @@ public class ReplicationSystem : ISystem
                 speed = shapeComponent.speed,
                 size = shapeComponent.size
 
-                if (ECSManager.Instance.Config.enableInputPrediction)
-                {
-                  int clientTime = idTime[entityId];
-                  idTimestruct clientIdTimeCreated = idTimeStruct(clientTime, entityId);
-                  
-                  // clientTimeCreated = ComponentsManager.Instance.GetComponent<ClientTimeCreateComponent>(entityId).clientTimeCreated;
-                }
             };
+
+            if (ECSManager.Instance.Config.enableInputPrediction)
+            {
+              Debug.Log("test-1");
+              uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;
+              Debug.Log(clientId);
+              if (entityID.id == clientId)
+              {
+                Debug.Log("test0");
+                int clientTimeCreated = ClientTimeCreateComponent.idTime[entityID.id];
+                Debug.Log("test1");
+                idTimeStruct clientIdTimeCreated = new idTimeStruct(clientTimeCreated, entityID.id);
+                Debug.Log("test2");
+
+                ShapeComponent clientPlayerComponentAfterInput = ClientTimeCreateComponent.timedClientComponent[clientIdTimeCreated];
+                Debug.Log("test3");
+
+                //comparaison, algo prediction/reconciliation
+                if (clientPlayerComponentAfterInput == shapeComponent) {
+                  Debug.Log("position ok");
+                }
+
+                else {
+                  Debug.Log("pas cool");
+                }
+             }
+                // clientTimeCreated = ComponentsManager.Instance.GetComponent<ClientTimeCreateComponent>(entityId).clientTimeCreated;
+          }
             ComponentsManager.Instance.SetComponent<ReplicationMessage>(entityID, msg);
         });
     }

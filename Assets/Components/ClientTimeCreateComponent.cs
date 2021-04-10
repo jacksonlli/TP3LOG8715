@@ -6,18 +6,18 @@ public struct ClientTimeCreateComponent : IComponent
 {
     // public static Dictionary<int, uint> timeId; //clé : temps
 
-    public static Dictionary<uint, int> idTime; //clé : Id
 
 
 
 
 
     public idTimeStruct clientIdTimeCreated;
-    public static Dictionary<idTimeStruct, IComponent> timedClientComponent;
+    public static Dictionary<idTimeStruct, ShapeComponent> timedClientComponent;
+    public static Dictionary<uint, int> idTime; //clé : Id
 
     public ClientTimeCreateComponent(uint id, int clientTimeCreated)
     {
-        this.clientIdTimeCreated = idTimeStruct(clientTimeCreated, id);
+        this.clientIdTimeCreated = new idTimeStruct(clientTimeCreated, id);
     }
 }
 

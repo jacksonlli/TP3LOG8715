@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class UserInputSystem : ISystem
 {
-    public compteur = 0;
+    public int compteur = 0;
     public string Name
     {
         get
@@ -16,6 +16,9 @@ public class UserInputSystem : ISystem
     // private Config config;
     public void UpdateSystem()
     {
+        ClientTimeCreateComponent.timedClientComponent = new Dictionary<idTimeStruct, ShapeComponent>();
+        ClientTimeCreateComponent.idTime = new Dictionary<uint, int>();
+
         if (ECSManager.Instance.NetworkManager.isClient)
         {
 
@@ -48,17 +51,20 @@ public class UserInputSystem : ISystem
             if (ECSManager.Instance.Config.enableInputPrediction)
             {
               uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;
-              Debug.Log(clientId);
               ShapeComponent playerComponent = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientId);
               playerComponent.speed = speed;
               ComponentsManager.Instance.SetComponent<ShapeComponent>(clientId, playerComponent);
 
+              ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(clientId, compteur);
+              ClientTimeCreateComponent.timedClientComponent[timeCreateComponent.clientIdTimeCreated] = playerComponent;
+              ClientTimeCreateComponent.idTime[clientId] = compteur;
+              Debug.Log("userinputsyst done");
             }
 
         }
     }
 
-    private static void CreateUserInputMessage(Vector2 speed)
+    private /*static*/ void CreateUserInputMessage(Vector2 speed)
     {
         // creates messages from user input
         uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;

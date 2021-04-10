@@ -5,7 +5,7 @@ public struct ReplicationMessage : IComponent
     public int messageID;
     public int timeCreated;
 
-    public int clientTimeCreated;
+    // public int clientTimeCreated;
 
     public uint entityId;
     public Config.Shape shape;

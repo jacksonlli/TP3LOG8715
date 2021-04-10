@@ -17,19 +17,24 @@ public struct ShapeComponent : IComponent
         this.shape = shape;
     }
 
+
+
+// https://stackoverflow.com/questions/15199026/comparing-two-structs-using
+
 // https://grantwinney.com/how-to-compare-two-objects-testing-for-equality-in-c/
-    public override bool Equals(Object obj)
-    {
-       //Check for null and compare run-time types.
-       if ((obj == null) || ! this.GetType().Equals(obj.GetType()))
-       {
-          return false;
-       }
-       else {
-          ShapcComponent other = (ShapeComponent) obj;
-          return ( (pos == other.pos) && (size == other.size) && (speed == other.speed) && (shape == other.shape));
-       }
-    }
+    // public override bool Equals(Object obj)
+    // {
+    //    //Check for null and compare run-time types.
+    //    if ((obj == null) || ! this.GetType().Equals(obj.GetType()))
+    //    {
+    //       return false;
+    //    }
+    //    else {
+    //       ShapcComponent other = (ShapeComponent) obj;
+    //       return ( (pos == other.pos) && (size == other.size) && (speed == other.speed) && (shape == other.shape));
+    //    }
+    // }
+
 
     public static bool operator ==(ShapeComponent x, ShapeComponent y)
     {
