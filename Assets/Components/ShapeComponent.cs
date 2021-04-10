@@ -16,4 +16,32 @@ public struct ShapeComponent : IComponent
         this.speed = speed;
         this.shape = shape;
     }
+
+// https://grantwinney.com/how-to-compare-two-objects-testing-for-equality-in-c/
+    public override bool Equals(Object obj)
+    {
+       //Check for null and compare run-time types.
+       if ((obj == null) || ! this.GetType().Equals(obj.GetType()))
+       {
+          return false;
+       }
+       else {
+          ShapcComponent other = (ShapeComponent) obj;
+          return ( (pos == other.pos) && (size == other.size) && (speed == other.speed) && (shape == other.shape));
+       }
+    }
+
+    public static bool operator ==(ShapeComponent x, ShapeComponent y)
+    {
+        return x.Equals(y);
+    }
+
+    public static bool operator !=(Person x, Person y)
+    {
+        return !(x == y);
+    }
+
+
+
+
 }
