@@ -36,7 +36,7 @@ public struct ShapeComponent : IComponent
         return x.Equals(y);
     }
 
-    public static bool operator !=(Person x, Person y)
+    public static bool operator !=(ShapeComponent x, ShapeComponent y)
     {
         return !(x == y);
     }
