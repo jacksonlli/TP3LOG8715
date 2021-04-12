@@ -12,8 +12,9 @@ public struct ClientTimeCreateComponent : IComponent
 
 
     public idTimeStruct clientIdTimeCreated;
-    public static Dictionary<idTimeStruct, ShapeComponent> timedClientComponent;
-    public static Dictionary<uint, int> idTime; //clé : Id
+    public static Dictionary<idTimeStruct, ShapeComponent> timedClientComponent = new Dictionary<idTimeStruct, ShapeComponent>();
+    public static Dictionary<uint, int> idTime = new Dictionary<uint, int>(); //clé : Id
+
 
     public ClientTimeCreateComponent(uint id, int clientTimeCreated)
     {

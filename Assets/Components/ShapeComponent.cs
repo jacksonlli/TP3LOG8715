@@ -18,6 +18,15 @@ public struct ShapeComponent : IComponent
     }
 
 
+    public void LogInfo()
+    {
+      string text = "";
+      text += pos.ToString() + "\n";
+      text += speed.ToString() + "\n";
+      Debug.Log(text);
+
+    }
+
 
 // https://stackoverflow.com/questions/15199026/comparing-two-structs-using
 

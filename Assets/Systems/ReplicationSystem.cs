@@ -39,33 +39,30 @@ public class ReplicationSystem : ISystem
 
             };
 
-            if (ECSManager.Instance.Config.enableInputPrediction)
-            {
-              Debug.Log("test-1");
-              uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;
-              Debug.Log(clientId);
-              if (entityID.id == clientId)
-              {
-                Debug.Log("test0");
-                int clientTimeCreated = ClientTimeCreateComponent.idTime[entityID.id];
-                Debug.Log("test1");
-                idTimeStruct clientIdTimeCreated = new idTimeStruct(clientTimeCreated, entityID.id);
-                Debug.Log("test2");
-
-                ShapeComponent clientPlayerComponentAfterInput = ClientTimeCreateComponent.timedClientComponent[clientIdTimeCreated];
-                Debug.Log("test3");
-
-                //comparaison, algo prediction/reconciliation
-                if (clientPlayerComponentAfterInput == shapeComponent) {
-                  Debug.Log("position ok");
-                }
-
-                else {
-                  Debug.Log("pas cool");
-                }
-             }
-                // clientTimeCreated = ComponentsManager.Instance.GetComponent<ClientTimeCreateComponent>(entityId).clientTimeCreated;
-          }
+          //   if (ECSManager.Instance.Config.enableInputPrediction)
+          //   {
+          //
+          //     if (ClientTimeCreateComponent.idTime.ContainsKey(entityID.id))
+          //     {
+          //       int clientTimeCreated = ClientTimeCreateComponent.idTime[entityID.id];
+          //       idTimeStruct clientIdTimeCreated = new idTimeStruct(clientTimeCreated, entityID.id);
+          //       ShapeComponent clientPlayerComponentAfterInput = ClientTimeCreateComponent.timedClientComponent[clientIdTimeCreated];
+          //
+          //       //comparaison, algo prediction/reconciliation
+          //       if (clientPlayerComponentAfterInput == shapeComponent) {
+          //         // Debug.Log("position ok");
+          //       }
+          //
+          //       else {
+          //         Debug.Log("pas cool");
+          //         Debug.Log("calcul client :");
+          //         clientPlayerComponentAfterInput.LogInfo();
+          //         Debug.Log("côté serv :" );
+          //         shapeComponent.LogInfo();
+          //       }
+          //    }
+          //       // clientTimeCreated = ComponentsManager.Instance.GetComponent<ClientTimeCreateComponent>(entityId).clientTimeCreated;
+          // }
             ComponentsManager.Instance.SetComponent<ReplicationMessage>(entityID, msg);
         });
     }
@@ -91,10 +88,43 @@ public class ReplicationSystem : ISystem
             }
             else
             {
+              if (ECSManager.Instance.Config.enableInputPrediction)
+              {
+
+                if (ClientTimeCreateComponent.idTime.ContainsKey(msgReplication.entityId))
+                {
+                  int clientTimeCreated = ClientTimeCreateComponent.idTime[msgReplication.entityId];
+                  idTimeStruct clientIdTimeCreated = new idTimeStruct(clientTimeCreated, msgReplication.entityId);
+                  ShapeComponent clientPlayerComponentAfterInput = ClientTimeCreateComponent.timedClientComponent[clientIdTimeCreated];
+
+                  ShapeComponent serverComponentAfterInput = new ShapeComponent(msgReplication.pos, msgReplication.size, msgReplication.speed, msgReplication.shape);
+
+
+
+                  if (clientPlayerComponentAfterInput == serverComponentAfterInput) {
+                    Debug.Log("position ok");
+                  }
+
+                  else {
+                    Debug.Log("pas cool");
+                    Debug.Log("created : " + clientTimeCreated);
+                    Debug.Log("calcul client :");
+                    clientPlayerComponentAfterInput.LogInfo();
+                    Debug.Log("côté serv :" );
+                    serverComponentAfterInput.LogInfo();
+                  }
+               }
+                  // clientTimeCreated = ComponentsManager.Instance.GetComponent<ClientTimeCreateComponent>(entityId).clientTimeCreated;
+              }
+
+
+              else
+              {
                 component.pos = msgReplication.pos;
                 component.speed = msgReplication.speed;
                 component.size = msgReplication.size;
                 ComponentsManager.Instance.SetComponent<ShapeComponent>(msgReplication.entityId, component);
+              }
             }
         });
     }
