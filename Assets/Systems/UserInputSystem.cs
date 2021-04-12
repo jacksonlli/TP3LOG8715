@@ -56,7 +56,6 @@ public class UserInputSystem : ISystem
             if (ECSManager.Instance.Config.enableInputPrediction)
             {
               uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;
-              Debug.Log("client id "+clientId);
               ShapeComponent playerComponent = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientId);
               ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(clientId, compteur);
               ClientTimeCreateComponent.timedClientComponent[timeCreateComponent.clientIdTimeCreated] = playerComponent;
@@ -66,7 +65,6 @@ public class UserInputSystem : ISystem
               ComponentsManager.Instance.SetComponent<ShapeComponent>(clientId, playerComponent);
 
 
-              Debug.Log("userinputsyst done");
             }
 
         }

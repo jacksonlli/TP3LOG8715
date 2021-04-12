@@ -102,16 +102,24 @@ public class ReplicationSystem : ISystem
 
 
                   if (clientPlayerComponentAfterInput == serverComponentAfterInput) {
-                    Debug.Log("position ok");
+                    // Debug.Log("position ok");
                   }
 
                   else {
                     Debug.Log("pas cool");
-                    Debug.Log("created : " + clientTimeCreated);
                     Debug.Log("calcul client :");
                     clientPlayerComponentAfterInput.LogInfo();
                     Debug.Log("côté serv :" );
                     serverComponentAfterInput.LogInfo();
+
+                    //NOTE : les logs montrent que
+                    //a un input/frame(?) d'avance par rapport au serv
+                    //ex : le client est arrêté et a vitesse nulle, le serv
+                    //a vitesse non nulle 
+
+                    //AF : Faire une Queue; si on a un problème
+                    //se mettre à la position envoyée par le serv, et
+                    //se remettre aux actions sauvegardées de la Queue à partir du temps t
                   }
                }
                   // clientTimeCreated = ComponentsManager.Instance.GetComponent<ClientTimeCreateComponent>(entityId).clientTimeCreated;
