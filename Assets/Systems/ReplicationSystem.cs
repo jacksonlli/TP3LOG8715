@@ -74,10 +74,12 @@ public class ReplicationSystem : ISystem
         // apply state from server
         // can receive only one replication message per entity for simplicity
 
+        ShapeComponent component;
+
         //this loop is for reshaping entities into players
         ComponentsManager.Instance.ForEach<ReplicationMessage>((entityID, msgReplication) =>
         {
-            var component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
+            component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
             if (component.shape != msgReplication.shape)
             {
                 // needs to respawn entity to change its shape
@@ -129,47 +131,70 @@ public class ReplicationSystem : ISystem
         //the loops in this section are for applying simulations
         if (reconciliationBool)
         {
-            ClientHistory entityClientHistory;
             //overwrite history at time t with the server state
             ComponentsManager.Instance.ForEach<ReplicationMessage>((entityID, msgReplication) =>
             {
-                entityClientHistory = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId);
-                ShapeComponent component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
+                ClientHistory entityHistory = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId);
+                component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
                 component.pos = msgReplication.pos;
                 component.speed = msgReplication.speed;
                 component.size = msgReplication.size;
-                entityClientHistory.shapeComponents[0] = component;
+                entityHistory.shapeComponents[0] = component;
 
             });
 
-            //simulate and overwrite histories from time t to current time
-            ComponentsManager.Instance.ForEach<ClientHistory>((entityID, entityClientHistory) =>
+            //simulate and overwrite histories from time t+1 to current time
+            for (int i = 1; i < ComponentsManager.Instance.GetComponent<ClientHistory>(1).shapeComponents.Count; i++)
             {
+                ShapeComponent prevShapeComponent;
+                ShapeComponent newShapeComponent;
                 //simulate wall collisions
-                //ComponentsManager.Instance.ForEach<ClientHistory>((entityID, history) =>
-                //{
-                //WallCollisionDetectionSystem.WallCollisionDetection();
-                //});
-                //    //simulate entity collisions
-                //    ComponentsManager.Instance.ForEach<ClientHistory>((entityID, history) =>
-                //    {
+                ComponentsManager.Instance.ForEach<ClientHistory>((entityID, entityClientHistory) =>
+                {
+                    prevShapeComponent = entityClientHistory.shapeComponents[i-1];
+                    newShapeComponent = WallCollisionDetectionSystem.WallCollisionDetection(prevShapeComponent);
+                    entityClientHistory.shapeComponents[i] = newShapeComponent;//this is an intermediate value that will be modified by the simulations below.
+                });
 
-                //    });
-                //    //simulate bounce
-                //    ComponentsManager.Instance.ForEach<ClientHistory>((entityID, history) =>
-                //    {
+                ShapeComponent playerShapeComponent;
+                Dictionary<uint, bool> entityCollisionBool = new Dictionary<uint, bool>();
+                bool isCollision;
 
-                //    });
-                //    //simulate position updates and overwrite history
-                //    ComponentsManager.Instance.ForEach<ClientHistory>((entityID, history) =>
-                //    {
+                //simulate entity collisions
+                ComponentsManager.Instance.ForEach<ClientHistory>((entityID, entityClientHistory) =>
+                {
+                    //init collision bool to false
+                    entityCollisionBool.Add(entityID, false);
 
-                //    });
-            });
-            
+                    ComponentsManager.Instance.ForEach<ClientHistory, PlayerComponent>((playerEntityID, playerClientHistory, playerComponent) =>
+                    {
+                        prevShapeComponent = entityClientHistory.shapeComponents[i];//continuer la simulation de cet entité
+                        playerShapeComponent = ComponentsManager.Instance.GetComponent<ClientHistory>(playerEntityID).shapeComponents[i];
+                        isCollision = CircleCollisionDetectionSystem.CircleCollisionDetection(entityID, prevShapeComponent, playerEntityID, playerShapeComponent) | entityCollisionBool[entityID];
+                        entityCollisionBool[entityID] = isCollision;
+                    });
+                });
+                //simulate bounce back
+                ComponentsManager.Instance.ForEach<ClientHistory>((entityID, entityClientHistory) =>
+                {
+                    if (entityCollisionBool[entityID])
+                    {
+                        prevShapeComponent = entityClientHistory.shapeComponents[i];//continuer la simulation de cet entité
+                        newShapeComponent = BounceBackSystem.BounceBack(prevShapeComponent);
+                        entityClientHistory.shapeComponents[i] = newShapeComponent;
+                    }
+                });
+                //simulate position updates and overwrite history
+                ComponentsManager.Instance.ForEach<ClientHistory>((entityID, entityClientHistory) =>
+                {
+                    prevShapeComponent = entityClientHistory.shapeComponents[i];//continuer la simulation de cet entité
+                    newShapeComponent = prevShapeComponent;
+                    newShapeComponent.pos = PositionUpdateSystem.GetNewPosition(prevShapeComponent.pos, prevShapeComponent.speed);
+                    entityClientHistory.shapeComponents[i] = newShapeComponent;
+                });
+            }
+
         }
-        
-
         //this loop is for applying the corrected/simulated state to the entities
         ComponentsManager.Instance.ForEach<ReplicationMessage>((entityID, msgReplication) =>
         {
@@ -180,11 +205,14 @@ public class ReplicationSystem : ISystem
                 {
                     //Debug.Log("InputPred enabled");
 
+                    int latestIndex = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId).shapeComponents.Count - 1;
+                    component = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId).shapeComponents[latestIndex];
+                    ComponentsManager.Instance.SetComponent<ShapeComponent>(msgReplication.entityId, component);
                 }
                 else
                 {
                     //Debug.Log("InputPred not enabled");
-                    ShapeComponent component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
+                    component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
                     component.pos = msgReplication.pos;
                     component.speed = msgReplication.speed;
                     component.size = msgReplication.size;
@@ -197,15 +225,15 @@ public class ReplicationSystem : ISystem
                 {
                     //Debug.Log("DeadReckoning enabled");
 
-                    ShapeComponent component = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId).shapeComponents[0];
+                    int latestIndex = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId).shapeComponents.Count - 1;
+                    component = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId).shapeComponents[latestIndex];
                     ComponentsManager.Instance.SetComponent<ShapeComponent>(msgReplication.entityId, component);
-
 
                 }
                 else//without dead-reckoning activated, simply replicate non-player entities 
                 {
                     //Debug.Log("DeadReackoning not enabled");
-                    ShapeComponent component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
+                    component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
                     component.pos = msgReplication.pos;
                     component.speed = msgReplication.speed;
                     component.size = msgReplication.size;
@@ -214,24 +242,5 @@ public class ReplicationSystem : ISystem
             }
         });
 
-    }
-    private static ShapeComponent SimulateUpdates(uint entityID, ShapeComponent shapeComponent, List<ClientHistory> playerHistories)
-    {
-        //calculate new values after one frame of updates
-        shapeComponent = WallCollisionDetectionSystem.WallCollisionDetection(shapeComponent);
-        bool bounceBackBool = false;
-        foreach (var playerClientHistory in playerHistories)//for each player
-        {
-            if (CircleCollisionDetectionSystem.CircleCollisionDetection(entityID, shapeComponent, playerClientHistory.entityId, playerClientHistory.shapeComponents[0]))
-            {
-                bounceBackBool = true;
-            }
-        }
-        if (bounceBackBool)
-        {
-            shapeComponent = BounceBackSystem.BounceBack(shapeComponent);
-        }
-        shapeComponent.pos = PositionUpdateSystem.GetNewPosition(shapeComponent.pos, shapeComponent.speed, Time.deltaTime);
-        return shapeComponent;
     }
 }
