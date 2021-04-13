@@ -30,6 +30,7 @@ internal class ComponentsManager : Singleton<ComponentsManager>
         ClearComponents<SpawnInfo>();
         ClearComponents<MessagingInfo>();
         ClearComponents<ReplicationMessage>();
+        ClearComponents<ClientHistory>();
         ClearComponents<CollisionEventComponent>();
         ClearComponents<UserInputMessage>();
         ClearComponents<ClientTimeCreateComponent>();

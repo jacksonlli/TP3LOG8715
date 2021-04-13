@@ -14,7 +14,9 @@ public class PositionUpdateSystem : ISystem {
 
     public void UpdateSystem()
     {
+
         UpdateSystem(Time.deltaTime);
+
     }
 
     public void UpdateSystem(float deltaTime)

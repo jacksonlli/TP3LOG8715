@@ -30,12 +30,16 @@ public class CustomNetworkManager : NetworkingManager
         }
         else
         {
+            //fixed frame rate to facilitate reconciliation
+            Application.targetFrameRate = 30;
             RegisterClientNetworkHandlers();
         }
     }
 
     public void OnStartServer()
     {
+        //fixed frame rate to facilitate reconciliation
+        Application.targetFrameRate = 30;
         RegisterServerNetworkHandlers();
     }
 

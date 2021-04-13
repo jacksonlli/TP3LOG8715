@@ -15,10 +15,16 @@ public class BounceBackSystem : ISystem
     {
         ComponentsManager.Instance.ForEach<CollisionEventComponent, ShapeComponent>((entity, collisionEventComponent, shapeComponent) =>
         {
-            Vector2 speed = shapeComponent.speed;
-
-            shapeComponent.speed = -shapeComponent.speed;
+            shapeComponent = BounceBack(shapeComponent);
             ComponentsManager.Instance.SetComponent<ShapeComponent>(entity, shapeComponent);
         });
+    }
+
+    public static ShapeComponent BounceBack(ShapeComponent shapeComponent)
+    {
+        Vector2 speed = shapeComponent.speed;
+
+        shapeComponent.speed = -shapeComponent.speed;
+        return shapeComponent;
     }
 }

@@ -55,7 +55,7 @@ public class SpawnSystem : ISystem
         {
             uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;
 
-            Debug.Log("CLIENT ID " + clientId);
+            //Debug.Log("CLIENT ID " + clientId);
             bool playerSpawned = ComponentsManager.Instance.TryGetComponent(clientId, out PlayerComponent playerComponent);
             if (!playerSpawned)
             {

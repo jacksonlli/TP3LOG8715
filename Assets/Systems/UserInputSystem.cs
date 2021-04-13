@@ -58,7 +58,7 @@ public class UserInputSystem : ISystem
               ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(clientId, compteur);
               ClientTimeCreateComponent.timedClientComponent[timeCreateComponent.clientIdTimeCreated] = playerComponent;
               ClientTimeCreateComponent.idTime[clientId] = compteur;
-              Debug.Log("userinputsyst done");
+              //Debug.Log("userinputsyst done");
             }
 
         }
