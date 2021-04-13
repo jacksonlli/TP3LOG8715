@@ -148,7 +148,7 @@ public class ReplicationSystem : ISystem
                 //simulate wall collisions
                 //ComponentsManager.Instance.ForEach<ClientHistory>((entityID, history) =>
                 //{
-                    //WallCollisionDetectionSystem.WallCollisionDetection();
+                //WallCollisionDetectionSystem.WallCollisionDetection();
                 //});
                 //    //simulate entity collisions
                 //    ComponentsManager.Instance.ForEach<ClientHistory>((entityID, history) =>
@@ -165,7 +165,7 @@ public class ReplicationSystem : ISystem
                 //    {
 
                 //    });
-            }
+            });
             
         }
         
