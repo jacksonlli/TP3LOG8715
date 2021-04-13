@@ -111,7 +111,7 @@ public class ReplicationSystem : ISystem
                       ShapeComponent serverComponentAfterInput = new ShapeComponent(msgReplication.pos, msgReplication.size, msgReplication.speed, msgReplication.shape);
 
 
-                      if (clientPlayerComponentAfterInput == serverComponentAfterInput) {
+                      if (clientPlayerComponentAfterInput.isCloseEnough(serverComponentAfterInput)) {
                         // Debug.Log("position ok");
                       }
 
