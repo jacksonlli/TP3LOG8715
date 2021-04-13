@@ -57,12 +57,21 @@ public class UserInputSystem : ISystem
             {
               uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;
               ShapeComponent playerComponent = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientId);
+
+              // ComponentsManager.Instance.TryGetComponent<ShapeComponent>(clientId, out ShapeComponent playerComponent);
+
+              playerComponent.speed = speed;
+              ComponentsManager.Instance.SetComponent<ShapeComponent>(clientId, playerComponent);
+
               ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(clientId, compteur);
               ClientTimeCreateComponent.timedClientComponent[timeCreateComponent.clientIdTimeCreated] = playerComponent;
               ClientTimeCreateComponent.idTime[clientId] = compteur;
 
-              playerComponent.speed = speed;
-              ComponentsManager.Instance.SetComponent<ShapeComponent>(clientId, playerComponent);
+              if (inputEntered)
+              {
+                Debug.Log("Time created client : " + compteur);
+              }
+
 
 
             }

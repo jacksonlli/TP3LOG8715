@@ -45,6 +45,7 @@ public class CustomNetworkManager : NetworkingManager
         {
             using (PooledBitWriter writer = PooledBitWriter.Get(stream))
             {
+                writer.WriteInt32(msg.clientTimeCreated);
                 writer.WriteInt32(msg.messageID);
                 writer.WriteInt32(msg.timeCreated);
                 writer.WriteUInt32(msg.entityId);
@@ -63,6 +64,7 @@ public class CustomNetworkManager : NetworkingManager
         ReplicationMessage replicationMessage = new ReplicationMessage();
         using (PooledBitReader reader = PooledBitReader.Get(stream))
         {
+            replicationMessage.clientTimeCreated = reader.ReadInt32();
             replicationMessage.messageID = reader.ReadInt32();
             replicationMessage.timeCreated = reader.ReadInt32();
             replicationMessage.entityId = reader.ReadUInt32();
@@ -106,7 +108,9 @@ public class CustomNetworkManager : NetworkingManager
         using (PooledBitReader reader = PooledBitReader.Get(stream))
         {
             userInputMessage.messageID = reader.ReadInt32();
+            // userInputMessage.inputEntered = reader.ReadBool();
             userInputMessage.timeCreated = reader.ReadInt32();
+            //!!!PRENDRE EN COMPTE TIMECREATED SEUL TRUC IMPORTANT
             userInputMessage.entityId = reader.ReadUInt32();
             userInputMessage.speed = reader.ReadVector2();
 
@@ -122,7 +126,7 @@ public class CustomNetworkManager : NetworkingManager
               ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(userInputMessage.entityId, userInputMessage.timeCreated);
               ClientTimeCreateComponent.timedClientComponent[timeCreateComponent.clientIdTimeCreated] = newShape;
               ClientTimeCreateComponent.idTime[userInputMessage.entityId] = userInputMessage.timeCreated;
-              ComponentsManager.Instance.SetComponent<ClientTimeCreateComponent>(userInputMessage.entityId, timeCreateComponent);
+              // ComponentsManager.Instance.SetComponent<ClientTimeCreateComponent>(userInputMessage.entityId, timeCreateComponent);
             }
 
             ComponentsManager.Instance.SetComponent<ShapeComponent>(userInputMessage.entityId, newShape);
