@@ -143,13 +143,12 @@ public class ReplicationSystem : ISystem
             });
 
             //simulate and overwrite histories from time t to current time
-            for (int i = 1; i < ComponentsManager.Instance.GetComponent<ClientHistory>(0).shapeComponents.Count; i++)
+            ComponentsManager.Instance.ForEach<ClientHistory>((entityID, entityClientHistory) =>
             {
-
                 //simulate wall collisions
                 //ComponentsManager.Instance.ForEach<ClientHistory>((entityID, history) =>
                 //{
-                  //  WallCollisionDetectionSystem.WallCollisionDetection()
+                    //WallCollisionDetectionSystem.WallCollisionDetection();
                 //});
                 //    //simulate entity collisions
                 //    ComponentsManager.Instance.ForEach<ClientHistory>((entityID, history) =>
