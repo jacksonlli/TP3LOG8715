@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class UserInputSystem : ISystem
 {
-    public int compteur = 0;
     public string Name
     {
         get
@@ -21,7 +20,6 @@ public class UserInputSystem : ISystem
         if (ECSManager.Instance.NetworkManager.isClient)
         {
 
-            compteur++;
             bool inputEntered = false;
 
             float xSpeed = 0;
@@ -63,14 +61,10 @@ public class UserInputSystem : ISystem
               playerComponent.speed = speed;
               ComponentsManager.Instance.SetComponent<ShapeComponent>(clientId, playerComponent);
 
-              ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(clientId, compteur);
+              ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(clientId, Utils.SystemTime);
               ClientTimeCreateComponent.timedClientComponent[timeCreateComponent.clientIdTimeCreated] = playerComponent;
-              ClientTimeCreateComponent.idTime[clientId] = compteur;
+              ClientTimeCreateComponent.idTime[clientId] = Utils.SystemTime;
 
-              if (inputEntered)
-              {
-                Debug.Log("Time created client : " + compteur);
-              }
 
 
 
@@ -86,7 +80,7 @@ public class UserInputSystem : ISystem
         UserInputMessage msg = new UserInputMessage()
         {
             messageID = 0,
-            timeCreated = compteur,
+            timeCreated = Utils.SystemTime,
             entityId = clientId,
             speed = speed
         };
