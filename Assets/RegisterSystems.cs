@@ -21,6 +21,7 @@ public class RegisterSystems
         toRegister.Add(new NetworkMessageSystem());
         toRegister.Add(new ClearEndOfFrameComponentsSystem());
         toRegister.Add(new DisplayShapePositionSystem());
+        toRegister.Add(new HistorySystem());
 
         return toRegister;
 
