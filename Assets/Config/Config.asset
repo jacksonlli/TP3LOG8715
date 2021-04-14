@@ -16,8 +16,17 @@ MonoBehaviour:
   - initialPos: {x: 2, y: 1}
     size: 0.5
     shape: 1
-  - initialPos: {x: 2, y: 1}
+  - initialPos: {x: 4, y: 2}
+    size: 1.5
+    shape: 1
+  - initialPos: {x: 5, y: 4}
     size: 0.5
     shape: 1
-  enableInputPrediction: 1
+  - initialPos: {x: -2, y: -1}
+    size: 1
+    shape: 1
+  - initialPos: {x: -4, y: 3}
+    size: 1
+    shape: 1
+  enableInputPrediction: 0
   enableDeadReckoning: 0
