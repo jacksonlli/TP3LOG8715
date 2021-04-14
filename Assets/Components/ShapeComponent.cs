@@ -29,7 +29,7 @@ public struct ShapeComponent : IComponent
 
     public bool isCloseEnough(ShapeComponent other)
     {
-      return Vector2.Distance(pos, other.pos) <= 0.5;
+      return Vector2.Distance(pos, other.pos) <= 0.6;
     }
 
 

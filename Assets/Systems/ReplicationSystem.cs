@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-
+using System;
 
 public class ReplicationSystem : ISystem
 {
@@ -70,6 +70,8 @@ public class ReplicationSystem : ISystem
             // ComponentsManager.Instance.SetComponent<ReplicationMessage>(entityID, msg);
         });
     }
+
+
     public static void UpdateSystemClient()
     {
         // apply state from server
@@ -97,9 +99,6 @@ public class ReplicationSystem : ISystem
 
                 if (ClientTimeCreateComponent.idTime.ContainsKey(msgReplication.entityId))
                 {
-                  // int clientTimeCreated = ClientTimeCreateComponent.idTime[msgReplication.entityId];
-                  // Debug.Log("heure client : " + clientTimeCreated);
-                  // Debug.Log("heure serv : " + msgReplication.clientTimeCreated);
 
                   idTimeStruct clientIdTimeCreated = new idTimeStruct(msgReplication.clientTimeCreated, msgReplication.entityId);
 
@@ -117,27 +116,29 @@ public class ReplicationSystem : ISystem
 
                       else
                       {
-                        Debug.Log("calcul client :"+msgReplication.clientTimeCreated);
-                        clientPlayerComponentAfterInput.LogInfo();
-                        Debug.Log("côté serv :" );
-                        serverComponentAfterInput.LogInfo();
+                        // Debug.Log("calcul client :"+msgReplication.clientTimeCreated);
+                        // clientPlayerComponentAfterInput.LogInfo();
+                        // Debug.Log("côté serv :" );
+                        // serverComponentAfterInput.LogInfo();
 
-                        //NOTE : les logs montrent que
-                        //a un input/frame(?) d'avance par rapport au serv
-                        //ex : le client est arrêté et a vitesse nulle, le serv
-                        //a vitesse non nulle
+                        ClientHistory playerHistory = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId);
+                        List<ClientHistory> playerHistories = new List<ClientHistory>();
+                        ////get history of all players
+                        ComponentsManager.Instance.ForEach<ClientHistory, PlayerComponent>((playerEntityID, playerClientHistory, playerComponent) =>
+                        {
+                            //get history of this player
+                            playerHistories.Add(playerClientHistory);
+                        });
 
-                        //!!!! Meme si tu reçois une réponse
-                        //ça veut pas dire que le serveur a process le nouveau état !!
-                        //il faut faire en sorte de savoir s'il y a eu nouvel état ou pas
+                        Debug.Log("pas cool");
+                        ShapeComponent currentComponent = SimulateInputUpdates(serverComponentAfterInput, msgReplication.entityId, playerHistory, msgReplication.clientTimeCreated, playerHistories);
+                        ComponentsManager.Instance.SetComponent<ShapeComponent>(msgReplication.entityId, currentComponent);
 
-                        //AF : Faire une Queue; si on a un problème
-                        //se mettre à la position envoyée par le serv, et
-                        //se remettre aux actions sauvegardées de la Queue à partir du temps t
-                        }
+                      }
+
+
                   }
                }
-                  // clientTimeCreated = ComponentsManager.Instance.GetComponent<ClientTimeCreateComponent>(entityId).clientTimeCreated;
               }
 
 
@@ -151,4 +152,94 @@ public class ReplicationSystem : ISystem
             }
         });
     }
+
+
+    private static ShapeComponent SimulateInputUpdates(ShapeComponent serverComponent, uint entityID, ClientHistory playerHistory, int originalTime, List<ClientHistory> playerHistories)
+    {
+
+        List<int> timeList = playerHistory.timeCreated;
+        List<ShapeComponent> shapeList = playerHistory.shapeComponents;
+        int originalTimeIndex = playerHistory.timeCreated.IndexOf(originalTime);
+
+        if (originalTimeIndex < 0)
+        {
+          int i = 0;
+          while (i < playerHistory.timeCreated.Count && originalTimeIndex < 0 && Math.Abs(originalTime - playerHistory.timeCreated[i]) > Time.deltaTime)
+          {
+            i++;
+          }
+          originalTimeIndex = i;
+        }
+        Debug.Log("original time " + originalTime);
+        Debug.Log("index "+originalTimeIndex);
+        // Debug.Log("shapelist size "+shapeList.Count);
+        // Debug.Log("timelist size "+timeList.Count);
+
+        shapeList[originalTimeIndex] = serverComponent;
+        ShapeComponent currentComponent = serverComponent;
+        ShapeComponent previousComponent;
+
+        currentComponent = WallCollisionDetectionSystem.WallCollisionDetection(currentComponent);
+        bool bounceBackBool = false;
+        foreach (var playerClientHistory in playerHistories)//for each player
+        {
+            if (CircleCollisionDetectionSystem.CircleCollisionDetection(entityID, currentComponent, playerClientHistory.entityId, playerClientHistory.shapeComponents[originalTimeIndex]))
+            {
+                bounceBackBool = true;
+            }
+        }
+        if (bounceBackBool)
+        {
+            currentComponent = BounceBackSystem.BounceBack(currentComponent);
+        }
+
+        shapeList[originalTimeIndex] = currentComponent;
+
+
+        for (int i = originalTimeIndex + 1; i < shapeList.Count - 1; i++)
+        {
+          previousComponent = currentComponent;
+          currentComponent = shapeList[i];
+
+          currentComponent.pos = PositionUpdateSystem.GetNewPosition(previousComponent.pos, previousComponent.speed, Time.deltaTime);
+          shapeList[i] = currentComponent;
+
+        }
+
+        playerHistory.shapeComponents = shapeList;
+
+        // for (int j = 0; j < originalTimeIndex; j++)
+        // {
+        //   playerHistory.shapeComponents.RemoveAt(j); //test
+        // }
+
+        return currentComponent;
+
+    }
+
+
+
+    private static ShapeComponent SimulateUpdates(uint entityID, ShapeComponent shapeComponent, List<ClientHistory> playerHistories)
+    {
+        //calculate new values after one frame of updates
+        shapeComponent = WallCollisionDetectionSystem.WallCollisionDetection(shapeComponent);
+        bool bounceBackBool = false;
+        foreach (var playerClientHistory in playerHistories)//for each player
+        {
+            if (CircleCollisionDetectionSystem.CircleCollisionDetection(entityID, shapeComponent, playerClientHistory.entityId, playerClientHistory.shapeComponents[0]))
+            {
+                bounceBackBool = true;
+            }
+        }
+        if (bounceBackBool)
+        {
+            shapeComponent = BounceBackSystem.BounceBack(shapeComponent);
+        }
+        shapeComponent.pos = PositionUpdateSystem.GetNewPosition(shapeComponent.pos, shapeComponent.speed, Time.deltaTime);
+        return shapeComponent;
+    }
+
+
+
+
 }

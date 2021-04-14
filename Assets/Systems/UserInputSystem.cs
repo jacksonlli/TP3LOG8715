@@ -20,7 +20,6 @@ public class UserInputSystem : ISystem
         if (ECSManager.Instance.NetworkManager.isClient)
         {
 
-            bool inputEntered = false;
 
             float xSpeed = 0;
             float ySpeed = 0;
@@ -28,22 +27,18 @@ public class UserInputSystem : ISystem
             if (Input.GetKey(KeyCode.W))
             {
                 ySpeed++;
-                inputEntered = true;
             }
             if (Input.GetKey(KeyCode.A))
             {
                 xSpeed--;
-                inputEntered = true;
             }
             if (Input.GetKey(KeyCode.S))
             {
                 ySpeed--;
-                inputEntered = true;
             }
             if (Input.GetKey(KeyCode.D))
             {
                 xSpeed++;
-                inputEntered = true;
             }
 
             float speedMagnitude = 10;
