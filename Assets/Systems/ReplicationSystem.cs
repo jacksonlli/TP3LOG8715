@@ -111,11 +111,12 @@ public class ReplicationSystem : ISystem
 
 
                       if (clientPlayerComponentAfterInput.isCloseEnough(serverComponentAfterInput)) {
-                        // Debug.Log("position ok");
+                        Debug.Log("position ok");
                       }
 
                       else
                       {
+                        Debug.Log("pas cool");
                         // Debug.Log("calcul client :"+msgReplication.clientTimeCreated);
                         // clientPlayerComponentAfterInput.LogInfo();
                         // Debug.Log("côté serv :" );
@@ -164,14 +165,22 @@ public class ReplicationSystem : ISystem
         if (originalTimeIndex < 0)
         {
           int i = 0;
-          while (i < playerHistory.timeCreated.Count && originalTimeIndex < 0 && Math.Abs(originalTime - playerHistory.timeCreated[i]) > Time.deltaTime)
+          while (i < playerHistory.timeCreated.Count && Math.Abs(originalTime - playerHistory.timeCreated[i]) > Time.deltaTime)
           {
             i++;
           }
-          originalTimeIndex = i;
+          if (i == playerHistory.timeCreated.Count)
+          {
+            originalTimeIndex = i-1;
+          }
+          else
+          {
+            originalTimeIndex = i;
+          }
         }
         Debug.Log("original time " + originalTime);
         Debug.Log("index "+originalTimeIndex);
+        Debug.Log("shapeList count "+shapeList.Count);
         // Debug.Log("shapelist size "+shapeList.Count);
         // Debug.Log("timelist size "+timeList.Count);
 
