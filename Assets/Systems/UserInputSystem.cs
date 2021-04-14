@@ -49,16 +49,20 @@ public class UserInputSystem : ISystem
             if (ECSManager.Instance.Config.enableInputPrediction)
             {
               uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;
-              ShapeComponent playerComponent = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientId);
+
+              if (ComponentsManager.Instance.TryGetComponent<ShapeComponent>(clientId, out _))
+                {
+                    ShapeComponent playerComponent = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientId);
+                    playerComponent.speed = speed;
+                    ComponentsManager.Instance.SetComponent<ShapeComponent>(clientId, playerComponent);
+                    ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(clientId, Utils.SystemTime);
+                    ClientTimeCreateComponent.timedClientComponent[timeCreateComponent.clientIdTimeCreated] = playerComponent;
+                    ClientTimeCreateComponent.idTime[clientId] = Utils.SystemTime;
+                }
 
               // ComponentsManager.Instance.TryGetComponent<ShapeComponent>(clientId, out ShapeComponent playerComponent);
 
-              playerComponent.speed = speed;
-              ComponentsManager.Instance.SetComponent<ShapeComponent>(clientId, playerComponent);
 
-              ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(clientId, Utils.SystemTime);
-              ClientTimeCreateComponent.timedClientComponent[timeCreateComponent.clientIdTimeCreated] = playerComponent;
-              ClientTimeCreateComponent.idTime[clientId] = Utils.SystemTime;
 
 
 
