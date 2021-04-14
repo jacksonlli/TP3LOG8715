@@ -16,8 +16,6 @@ public class UserInputSystem : ISystem
     // private Config config;
     public void UpdateSystem()
     {
-        ClientTimeCreateComponent.timedClientComponent = new Dictionary<idTimeStruct, ShapeComponent>();
-        ClientTimeCreateComponent.idTime = new Dictionary<uint, int>();
 
         if (ECSManager.Instance.NetworkManager.isClient)
         {
@@ -50,14 +48,15 @@ public class UserInputSystem : ISystem
 
             if (ECSManager.Instance.Config.enableInputPrediction)
             {
-              uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;
-              ShapeComponent playerComponent = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientId);
-              playerComponent.speed = speed;
-              ComponentsManager.Instance.SetComponent<ShapeComponent>(clientId, playerComponent);
+                uint clientId = (uint)ECSManager.Instance.NetworkManager.LocalClientId;
+                if (clientId != null & ComponentsManager.Instance.TryGetComponent<ShapeComponent>(clientId, out _))
+                {
+                    ShapeComponent playerComponent = ComponentsManager.Instance.GetComponent<ShapeComponent>(clientId);
+                    playerComponent.speed = speed;
+                    ComponentsManager.Instance.SetComponent<ShapeComponent>(clientId, playerComponent);
+                }
+               
 
-              ClientTimeCreateComponent timeCreateComponent = new ClientTimeCreateComponent(clientId, compteur);
-              ClientTimeCreateComponent.timedClientComponent[timeCreateComponent.clientIdTimeCreated] = playerComponent;
-              ClientTimeCreateComponent.idTime[clientId] = compteur;
               //Debug.Log("userinputsyst done");
             }
 
