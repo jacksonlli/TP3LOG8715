@@ -71,7 +71,7 @@ public class ReplicationSystem : ISystem
 
 
 
-        bool inputReconciliationBool = isInputReconciliation(threshold);
+        bool inputReconciliationBool = isInputReconciliation(threshold*5);
         if (inputReconciliationBool)
         {
           simulateInputUpdates();
@@ -108,7 +108,7 @@ public class ReplicationSystem : ISystem
             ClientHistory entityClientHistory = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId);
 
             //update entity history to only contain states with time equal or greater than timestamp in the server replication message
-            while (msgReplication.timeCreated - entityClientHistory.timeCreated[0] > 3 * Time.deltaTime)
+            while (msgReplication.timeCreated - entityClientHistory.timeCreated[0] > 2 * Time.deltaTime)
             {
                 entityClientHistory.timeCreated.RemoveAt(0);
                 entityClientHistory.shapeComponents.RemoveAt(0);
@@ -270,7 +270,9 @@ public class ReplicationSystem : ISystem
 
                     if ((pastShapeComponent.pos - msgReplication.pos).sqrMagnitude > threshold)//if the position difference is larger than a threshold, apply reconciliation
                     {
+
                         reconciliationBool = true;
+
                     }
                   }
             });
