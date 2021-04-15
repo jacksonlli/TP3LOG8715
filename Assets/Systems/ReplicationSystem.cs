@@ -12,6 +12,8 @@ public class ReplicationSystem : ISystem
         }
     }
 
+    public static int threshold = 1;
+
     public void UpdateSystem()
     {
         if (ECSManager.Instance.NetworkManager.isServer)
@@ -54,18 +56,18 @@ public class ReplicationSystem : ISystem
         //updating the entity client histories to only contain states with time equal or larger than the timeCreated of the server replication message
         historyRemoveOld();
 
+
         //verifying if reconcialiation is needed for the entities
-        int distThreshold = 1;
-        bool reconciliationBool = isReconciliation(distThreshold);
+        bool npcReconciliationBool = isNPCReconciliation(threshold);
 
         //applying simulations
-        if (reconciliationBool)
+        if (npcReconciliationBool)
         {
             //overwrite history at time t with the server state
-            simulateUpdates();
+            simulateNPCUpdates();
         }
         //applying the corrected/simulated state to the entities
-        updateEntities(reconciliationBool);
+        updateNPCEntities(npcReconciliationBool);
 
     }
     private static void reshape()
@@ -106,7 +108,7 @@ public class ReplicationSystem : ISystem
         });
     }
 
-    private static bool isReconciliation(int threshold)
+    private static bool isNPCReconciliation(int threshold)
     {
         bool reconciliationBool = false;
         if (ECSManager.Instance.Config.enableDeadReckoning | ECSManager.Instance.Config.enableInputPrediction)
@@ -128,18 +130,20 @@ public class ReplicationSystem : ISystem
         return reconciliationBool;
     }
 
-    private static void simulateUpdates()
+    private static void simulateNPCUpdates()
     {
         ShapeComponent component;
         ComponentsManager.Instance.ForEach<ReplicationMessage>((entityID, msgReplication) =>
         {
+          if ((uint)entityID != (uint)ECSManager.Instance.NetworkManager.LocalClientId)
+            {
             ClientHistory entityHistory = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId);
             component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
             component.pos = msgReplication.pos;
             component.speed = msgReplication.speed;
             component.size = msgReplication.size;
             entityHistory.shapeComponents[0] = component;
-
+          }
         });
 
         //simulate and overwrite histories from time t+1 to current time
@@ -152,9 +156,12 @@ public class ReplicationSystem : ISystem
                 //simulate wall collisions
                 ComponentsManager.Instance.ForEach<ClientHistory>((entityID, entityClientHistory) =>
                 {
+                  if ((uint)entityID != (uint)ECSManager.Instance.NetworkManager.LocalClientId)
+                  {
                     prevShapeComponent = entityClientHistory.shapeComponents[i - 1];
                     newShapeComponent = WallCollisionDetectionSystem.WallCollisionDetection(prevShapeComponent);
                     entityClientHistory.shapeComponents[i] = newShapeComponent;//this is an intermediate value that will be modified by the simulations below.
+                  }
                 });
 
                 ShapeComponent playerShapeComponent;
@@ -164,6 +171,8 @@ public class ReplicationSystem : ISystem
                 //simulate entity collisions
                 ComponentsManager.Instance.ForEach<ClientHistory>((entityID, entityClientHistory) =>
                 {
+                  if ((uint)entityID != (uint)ECSManager.Instance.NetworkManager.LocalClientId)
+                  {
                     //init collision bool to false
                     entityCollisionBool.Add(entityID, false);
 
@@ -174,59 +183,46 @@ public class ReplicationSystem : ISystem
                         isCollision = CircleCollisionDetectionSystem.CircleCollisionDetection(entityID, prevShapeComponent, playerEntityID, playerShapeComponent) | entityCollisionBool[entityID];
                         entityCollisionBool[entityID] = isCollision;
                     });
+                  }
                 });
                 //simulate bounce back
                 ComponentsManager.Instance.ForEach<ClientHistory>((entityID, entityClientHistory) =>
                 {
+                  if ((uint)entityID != (uint)ECSManager.Instance.NetworkManager.LocalClientId)
+                  {
                     if (entityCollisionBool[entityID])
                     {
                         prevShapeComponent = entityClientHistory.shapeComponents[i];//continuer la simulation de cet entité
                         newShapeComponent = BounceBackSystem.BounceBack(prevShapeComponent);
                         entityClientHistory.shapeComponents[i] = newShapeComponent;
                     }
+                  }
+
                 });
                 //simulate position updates and overwrite history
                 ComponentsManager.Instance.ForEach<ClientHistory>((entityID, entityClientHistory) =>
                 {
-                    prevShapeComponent = entityClientHistory.shapeComponents[i];//continuer la simulation de cet entité
-                    newShapeComponent = prevShapeComponent;
-                    newShapeComponent.pos = PositionUpdateSystem.GetNewPosition(prevShapeComponent.pos, prevShapeComponent.speed);
-                    entityClientHistory.shapeComponents[i] = newShapeComponent;
+                  if ((uint)entityID != (uint)ECSManager.Instance.NetworkManager.LocalClientId)
+                    {
+                      prevShapeComponent = entityClientHistory.shapeComponents[i];//continuer la simulation de cet entité
+                      newShapeComponent = prevShapeComponent;
+                      newShapeComponent.pos = PositionUpdateSystem.GetNewPosition(prevShapeComponent.pos, prevShapeComponent.speed);
+                      entityClientHistory.shapeComponents[i] = newShapeComponent;
+                    }
                 });
             }
         }
     }
 
-    private static void updateEntities(bool reconciliationBool)
+    private static void updateNPCEntities(bool reconciliationBool)
     {
         ShapeComponent component;
         ComponentsManager.Instance.ForEach<ReplicationMessage>((entityID, msgReplication) =>
         {
             //if is client entity
-            if ((uint)entityID == (uint)ECSManager.Instance.NetworkManager.LocalClientId)
+            if ((uint)entityID != (uint)ECSManager.Instance.NetworkManager.LocalClientId)
             {
-                if (ECSManager.Instance.Config.enableInputPrediction)
-                {
-                    //Debug.Log("InputPred enabled");
-                    if (reconciliationBool)
-                    {
-                        int latestIndex = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId).shapeComponents.Count - 1;
-                        component = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId).shapeComponents[latestIndex];
-                        ComponentsManager.Instance.SetComponent<ShapeComponent>(msgReplication.entityId, component);
-                    }
-                }
-                else
-                {
-                    //Debug.Log("InputPred not enabled");
-                    component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
-                    component.pos = msgReplication.pos;
-                    component.speed = msgReplication.speed;
-                    component.size = msgReplication.size;
-                    ComponentsManager.Instance.SetComponent<ShapeComponent>(msgReplication.entityId, component);
-                }
-            }
-            else//if is not the client
-            {
+
                 if (ECSManager.Instance.Config.enableDeadReckoning)
                 {
                     //Debug.Log("DeadReckoning enabled");
@@ -237,7 +233,7 @@ public class ReplicationSystem : ISystem
                         ComponentsManager.Instance.SetComponent<ShapeComponent>(msgReplication.entityId, component);
                     }
                 }
-                else//without dead-reckoning activated, simply replicate non-player entities 
+                else//without dead-reckoning activated, simply replicate non-player entities
                 {
                     //Debug.Log("DeadReackoning not enabled");
                     component = ComponentsManager.Instance.GetComponent<ShapeComponent>(msgReplication.entityId);
@@ -250,5 +246,3 @@ public class ReplicationSystem : ISystem
         });
     }
 }
-
-
