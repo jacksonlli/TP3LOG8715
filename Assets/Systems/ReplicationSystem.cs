@@ -108,7 +108,7 @@ public class ReplicationSystem : ISystem
             ClientHistory entityClientHistory = ComponentsManager.Instance.GetComponent<ClientHistory>(msgReplication.entityId);
 
             //update entity history to only contain states with time equal or greater than timestamp in the server replication message
-            while (msgReplication.timeCreated - entityClientHistory.timeCreated[0] > 2 * Time.deltaTime)
+            while (msgReplication.timeCreated - entityClientHistory.timeCreated[0] > 3 * Time.deltaTime)
             {
                 entityClientHistory.timeCreated.RemoveAt(0);
                 entityClientHistory.shapeComponents.RemoveAt(0);
@@ -187,10 +187,16 @@ public class ReplicationSystem : ISystem
 
                         ComponentsManager.Instance.ForEach<ClientHistory, PlayerComponent>((playerEntityID, playerClientHistory, playerComponent) =>
                         {
-                            prevShapeComponent = entityClientHistory.shapeComponents[i];//continuer la simulation de cet entité
-                            playerShapeComponent = ComponentsManager.Instance.GetComponent<ClientHistory>(playerEntityID).shapeComponents[i];
-                            isCollision = CircleCollisionDetectionSystem.CircleCollisionDetection(entityID, prevShapeComponent, playerEntityID, playerShapeComponent) | entityCollisionBool[entityID];
-                            entityCollisionBool[entityID] = isCollision;
+                            try
+                            {
+                                prevShapeComponent = entityClientHistory.shapeComponents[i];//continuer la simulation de cet entité
+                                playerShapeComponent = ComponentsManager.Instance.GetComponent<ClientHistory>(playerEntityID).shapeComponents[i];
+                                isCollision = CircleCollisionDetectionSystem.CircleCollisionDetection(entityID, prevShapeComponent, playerEntityID, playerShapeComponent) | entityCollisionBool[entityID];
+                                entityCollisionBool[entityID] = isCollision;
+                            }
+                            catch
+                            {
+                            }
                         });
 
 
